@@ -1,2 +1,2 @@
 # BigSpamProject
-
+Jack made this. Feel free to edit and make any necessary changes. Intended to use this just for myself and happy to merge it into a proper project later but I'll be commiting my things to a separate branch instead of master just in case. 
