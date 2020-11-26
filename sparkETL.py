@@ -8,8 +8,7 @@ body_regex = r'\n\n([\H\n\s]*)'
 
 
 def main(inputs, output):
-	
-	raw_email = spark.read.text(intputs, wholetext = True)
+	raw_email = spark.read.text(inputs, wholetext = True)
 	from_to = raw_email.select(\
 		f.regexp_extract('value', sender_regex, 1).alias('sender'), \
 		f.regexp_extract('value', receiver_regex, 1).alias('receiver'), \
@@ -17,8 +16,8 @@ def main(inputs, output):
 	from_to.write.csv(output, mode = 'overwrite')
 	
 if __name__ == '__main__':
-	inputs = sys.argv[0]
-	output = sys.argv[1]
-    spark = SparkSession.builder.appName('email ETL').getOrCreate()
-    spark.sparkContext.setLogLevel('WARN')
-    main(inputs, output)
+	inputs = sys.argv[1]
+	output = sys.argv[2]
+	spark = SparkSession.builder.appName('email ETL').getOrCreate()
+	spark.sparkContext.setLogLevel('WARN')
+	main(inputs, output)
