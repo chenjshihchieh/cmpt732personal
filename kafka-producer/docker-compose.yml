@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+
+  producer:
+    build: .
+    environment:
+      KAFKA_BROKER_URL: broker:9092
+      EMAILS_TOPIC: emails.topic
+      #EMAILS_PER_SECOND: 10
+      EMAIL_BATCH_SIZE: 10
+
+networks:
+  default:
+    external:
+      name: kafka-network
