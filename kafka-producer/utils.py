@@ -6,7 +6,12 @@ from glob import glob
 from urllib.request import urlretrieve
 
 # url to download 1998 spam dataset
-SPAM_URL = "http://untroubled.org/spam/1998.7z"
+SPAM_URL = os.environ.get("SPAM_URL")
+
+# def get_random_email_batch():
+#     # Idempotent assuming you don't change the params
+#     batch = [email_to_json(filename) for filename in files]
+#     return batch
 
 
 def get_n_random_email_files(n):
