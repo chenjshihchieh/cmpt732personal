@@ -7,8 +7,8 @@ services:
     environment:
       KAFKA_BROKER_URL: broker:9092
       EMAILS_TOPIC: emails.topic
-      #EMAILS_PER_SECOND: 10
-      EMAIL_BATCH_SIZE: 10
+      EMAILS_BATCH_SIZE: 10
+      SPAM_URL: "http://untroubled.org/spam/1998.7z"
 
 networks:
   default:
