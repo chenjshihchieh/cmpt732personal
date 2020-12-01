@@ -6,6 +6,8 @@ sender_regex = r'From:[^<]+<([^\n]+)>'
 receiver_regex = r'To: ([^\n]+)'
 subject_regex = r'Subject: ([^\n]+)'
 body_regex = r'\n\n([\H\n\s]*)'
+date_regex = r'Date: +([^\n]+)'
+length_regex = r'Content-Length: +([^\n]+'
 cassandra_host = 'localhost'
 
 def simplify_doc_udf(html_text):
@@ -19,6 +21,8 @@ def main(inputs, output):
 		f.regexp_extract('value', sender_regex, 1).alias('sender'), \
 		f.regexp_extract('value', receiver_regex, 1).alias('receiver'), \
 		f.regexp_extract('value', subject_regex, 1).alias('subject'), \
+		f.regexp_extract('value', date_regex, 1).alias('date'), \
+		f.regexp_extract('value', length_regex, 1).alias('word_length'), \
 		f.regexp_extract('value', body_regex, 1).alias('html_body'))\
 	.withColumn('id', f.monotonically_increasing_id())\
 	.withColumn('body', html_to_plain_udf('html_body'))
