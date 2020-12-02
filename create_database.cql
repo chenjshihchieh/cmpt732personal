@@ -3,4 +3,4 @@ CREATE KEYSPACE email_database WITH REPLICATION = {
 	
 USE email_database;
 
-CREATE TABLE email(id bigint PRIMARY KEY, sender text, receiver text, subject text, body text);
+CREATE TABLE emails (sender TEXT, id UUID, datetime TEXT, receiver TEXT, subject TEXT, body TEXT, PRIMARY KEY (sender, id));
