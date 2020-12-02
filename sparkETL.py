@@ -9,7 +9,6 @@ receiver_regex = r'To: ([^\n]+)'
 subject_regex = r'Subject: ([^\n]+)'
 body_regex = r'\n\n([\H\n\s]*)'
 date_regex = r'Date: +([^\n]+)'
-length_regex = r'Content-Length: +([^\n]+'
 cassandra_host = 'localhost'
 
 def simplify_doc_udf(html_text):
@@ -41,7 +40,7 @@ def process_email_body(email_body):
     lower_string = re.sub('[$]+', 'dollar', lower_string)
     
     # Word list of email body
-    word_list = re.split('[@$/#.-:&\*\+=\[\]?!(){},\'\'\">_<;%\s\n\r\t]+',lower_string.strip())
+    word_list = re.split('[^\w-]+',lower_string.strip())
     
     stemmer = nltk.stem.porter.PorterStemmer()
     
@@ -51,27 +50,29 @@ def process_email_body(email_body):
             word = re.sub('[^a-zA-Z0-9]', '', word)
             word = stemmer.stem(word)
             result_list.append(word)
+    return(result_list)
     #print(result_list)
         
     
 def main(inputs, output):
 	html_to_plain_udf = f.udf(simplify_doc_udf, types.StringType())
+	process_body_udf = f.udf(process_email_body, types.ArrayType(types.StringType()))
 	raw_email = spark.read.text(inputs, wholetext = True)
 	send_to_cassandra = raw_email.select(\
 		f.regexp_extract('value', sender_regex, 1).alias('sender'), \
 		f.regexp_extract('value', receiver_regex, 1).alias('receiver'), \
 		f.regexp_extract('value', subject_regex, 1).alias('subject'), \
-		f.regexp_extract('value', date_regex, 1).alias('date'), \
-		f.regexp_extract('value', length_regex, 1).alias('word_length'), \
+		f.regexp_extract('value', date_regex, 1).alias('datetime'), \
 		f.regexp_extract('value', body_regex, 1).alias('html_body'))\
 	.withColumn('id', f.monotonically_increasing_id())\
-	.withColumn('body', html_to_plain_udf('html_body'))
+	.withColumn('body', html_to_plain_udf('html_body'))\
+	.withColumn('word_tokens', process_body_udf('body'))
     
     
     
     
 	
-	send_to_cassandra.select('id', 'sender', 'receiver', 'subject', 'body').write.csv(output, mode='overwrite')
+	send_to_cassandra.select('id', 'sender', 'receiver', 'subject', 'datetime', 'word_tokens').write.json(output, mode='overwrite')
 	
 	#send_to_cassandra.write.format("org.apache.spark.sql.cassandra")\
 	#	.options(table = 'email', keyspace = 'email_database').save()
