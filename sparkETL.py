@@ -1,5 +1,5 @@
 import sys
-import re
+import re, uuid
 import nltk, nltk.stem.porter
 from simplified_scrapy.simplified_doc import SimplifiedDoc 
 from pyspark.sql import SparkSession, functions as f, types
@@ -64,7 +64,7 @@ def main(inputs, output):
 		f.regexp_extract('value', subject_regex, 1).alias('subject'), \
 		f.regexp_extract('value', date_regex, 1).alias('datetime'), \
 		f.regexp_extract('value', body_regex, 1).alias('html_body'))\
-	.withColumn('id', f.monotonically_increasing_id())\
+	.withColumn('id', uuid.uuid1())\
 	.withColumn('body', html_to_plain_udf('html_body'))\
 	.withColumn('word_tokens', process_body_udf('body'))
     
@@ -72,7 +72,7 @@ def main(inputs, output):
     
     
 	
-	send_to_cassandra.select('id', 'sender', 'receiver', 'subject', 'datetime', 'word_tokens').write.json(output, mode='overwrite')
+	send_to_cassandra.select('sender', 'id', 'receiver', 'subject', 'datetime', 'word_tokens').write.json(output, mode='overwrite')
 	
 	#send_to_cassandra.write.format("org.apache.spark.sql.cassandra")\
 	#	.options(table = 'email', keyspace = 'email_database').save()
